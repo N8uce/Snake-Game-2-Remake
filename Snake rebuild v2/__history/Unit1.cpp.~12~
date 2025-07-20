@@ -1,0 +1,221 @@
+#include "Unit1.h"
+#include "Unit2.h"
+#include "Unit3.h"
+
+#include <vcl.h>
+#include <stdlib.h>
+#include <vector>
+#pragma comment(lib, "winmm.lib")
+#pragma hdrstop
+#pragma package(smart_init)
+#pragma resource "*.dfm"
+
+
+TForm1 *Form1;
+
+ __fastcall TForm1::TForm1(TComponent* Owner)
+	: TForm(Owner)
+{
+
+}
+
+int x, y, dx, dy, len, score;
+int snake[1000][2];
+bool gameover = false;
+int apple_x, apple_y;
+int head_x, head_y; // Добавлен символ головы
+
+void spawn_apple() {
+	apple_x = rand() % Form1->StringGrid1->ColCount;
+	apple_y = rand() % Form1->StringGrid1->RowCount;
+	Form1->StringGrid1->Cells[apple_x][apple_y] = "A";
+}
+
+void new_game() {
+	x = 10; y = 10; dx = 1; dy = 0; len = 5; score = 5;
+	head_x = x; head_y = y; // Инициализация позиции головы
+	for (int i = 0; i < len; i++) {
+		snake[i][0] = x - i;
+		snake[i][1] = y;
+	}
+	gameover = false;
+	Form1->Timer1->Enabled = true;
+	spawn_apple(); // Спавним первое яблоко
+}
+
+void game_over() {
+	Form1->Timer1->Enabled = false;
+	gameover = true;
+	ShowMessage("Game Over! Your score: " + IntToStr(score));
+}
+
+void move_snake() {
+
+	head_x = x; head_y = y;
+	for (int i = len - 1; i > 0; i--) {
+		snake[i][0] = snake[i - 1][0];
+		snake[i][1] = snake[i - 1][1];
+	}
+    snake[0][0] = x;
+    snake[0][1] = y;
+}
+
+void draw_snake() {
+	for (int i = 0; i < len; i++) {
+        Form1->StringGrid1->Cells[snake[i][0]][snake[i][1]] = "S";
+	}
+	Form1->StringGrid1->Cells[head_x][head_y] = "H"; // Рисуем голову отдельно
+}
+
+void clear_snake() {
+	for (int i = 0; i < len; i++) {
+        Form1->StringGrid1->Cells[snake[i][0]][snake[i][1]] = "";
+	}
+	Form1->StringGrid1->Cells[head_x][head_y] = ""; // Очищаем голову отдельно
+}
+
+void check_collision() {
+    if (x < 0 || x >= Form1->StringGrid1->ColCount || y < 0 || y >= Form1->StringGrid1->RowCount) {
+        game_over();
+    }
+    for (int i = 1; i < len; i++) {
+		if (snake[i][0] == x && snake[i][1] == y) {
+			game_over();
+        }
+    }
+}
+
+void eat_apple() {
+	if (x == apple_x && y == apple_y) {
+        score++;
+        len++;
+        // Добавляем новый элемент в хвост змейки
+        for (int i = len - 1; i > 0; i--) {
+			snake[i][0] = snake[i - 1][0];
+			snake[i][1] = snake[i - 1][1];
+		}
+		// Перемещаем голову змейки на место яблока
+		snake[0][0] = apple_x;
+		snake[0][1] = apple_y;
+		spawn_apple();
+	}
+}
+
+void __fastcall TForm1::Timer1Timer(TObject *Sender)
+{
+
+	clear_snake();
+	StringGrid1->DoubleBuffered = true;
+	x += dx;
+	y += dy;
+	check_collision();
+	eat_apple();
+	if (!gameover) {
+		move_snake();
+		draw_snake();
+	}
+}
+
+ void __fastcall TForm1::FormKeyDown(TObject *Sender, WORD &Key, TShiftState Shift)
+{
+	switch (Key) {
+		case VK_UP: dx = 0; dy = -1; break;
+		case VK_DOWN: dx = 0; dy = 1; break;
+		case VK_LEFT: dx = -1; dy = 0; break;
+		case VK_RIGHT: dx = 1; dy = 0; break;
+	}
+}
+
+
+void __fastcall TForm1::StartGameClick(TObject *Sender)
+{
+ new_game();
+}
+
+ void __fastcall TForm1::FormCreate(TObject *Sender)
+{
+new_game();
+}
+
+
+void __fastcall TForm1::StringGrid1DrawCell(TObject *Sender, int ACol, int ARow,
+	  TRect &Rect, TGridDrawState State)
+{
+  if (State.Contains(gdSelected))
+	{
+		// Устанавливаем цвет фона и текста ячейки
+		StringGrid1->Canvas->Brush->Color = clWhite;
+		StringGrid1->Canvas->Font->Color = clBlack;
+
+		// Заполняем ячейку цветом
+		StringGrid1->Canvas->FillRect(Rect);
+
+		// Рисуем текст в ячейке
+		StringGrid1->Canvas->TextOut(Rect.Left, Rect.Top, StringGrid1->Cells[ACol][ARow]);
+	}
+
+	 Graphics::TBitmap *Bitmap = new Graphics::TBitmap;
+	try
+	{
+		// Проверяем, что находится в ячейке
+		AnsiString cellContent = StringGrid1->Cells[ACol][ARow];
+		if (cellContent == "A") {
+			// Загружаем изображение яблока
+			Bitmap->LoadFromFile("apple.bmp");
+		} else if (cellContent == "S") {
+			// Загружаем изображение змеи
+			Bitmap->LoadFromFile("snake.bmp");
+		} else if (cellContent == "H") {
+		 // Загружаем изображение головы змеи в зависимости от направления
+		if (dx == 0 && dy == -1) {
+			Bitmap->LoadFromFile("head_up.bmp");
+		} else if (dx == 0 && dy == 1) {
+        Bitmap->LoadFromFile("head_down.bmp");
+		} else if (dx == -1 && dy == 0) {
+        Bitmap->LoadFromFile("head_left.bmp");
+		} else if (dx == 1 && dy == 0) {
+		Bitmap->LoadFromFile("head_right.bmp");
+		}
+		} else {
+			// Если в ячейке ничего нет, то ничего не рисуем
+			delete Bitmap;
+			return;
+		}
+
+		// Рисуем изображение в ячейке
+		StringGrid1->Canvas->StretchDraw(Rect, Bitmap);
+	}
+	catch(...)
+	{
+		// Обрабатываем исключения
+	}
+	delete Bitmap;
+}
+
+void __fastcall TForm1::ExitClick(TObject *Sender)
+{Close();}
+//Уровни сложности
+//лёгкая
+void __fastcall TForm1::EasyClick(TObject *Sender)
+{ Timer1->Interval = 150;
+  Easy->Checked = true;
+  Medium->Checked = false;
+  Hard->Checked = false;}
+//средняя
+void __fastcall TForm1::MediumClick(TObject *Sender)
+{ Timer1->Interval = 100;
+   Medium->Checked = true;
+   Easy->Checked = false;
+   Hard->Checked = false;}
+//тяжёлый
+void __fastcall TForm1::HardClick(TObject *Sender)
+{Timer1->Interval = 50;
+   Hard->Checked = true;
+   Easy->Checked = false;
+   Medium->Checked = false;}
+// Открытие второго окна "Как играть?"
+void __fastcall TForm1::HowToPlayClick(TObject *Sender)
+{Form2->ShowModal();}
+//Открытие третьего окна "Об авторе"
+void __fastcall TForm1::AboutClick(TObject *Sender)
+{ Form3->ShowModal();}

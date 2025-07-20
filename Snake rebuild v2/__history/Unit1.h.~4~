@@ -1,0 +1,46 @@
+//---------------------------------------------------------------------------
+
+#ifndef Unit1H
+#define Unit1H
+//---------------------------------------------------------------------------
+#include <Classes.hpp>
+#include <Controls.hpp>
+#include <StdCtrls.hpp>
+#include <Forms.hpp>
+#include <ExtCtrls.hpp>
+#include <Menus.hpp>
+#include <Graphics.hpp>
+//---------------------------------------------------------------------------
+class TForm1 : public TForm
+{
+__published:	// IDE-managed Components
+	TTimer *Timer1;
+	TPaintBox *PaintBox1;
+	TMainMenu *MainMenu1;
+	TMenuItem *N1;
+	TMenuItem *N2;
+	TMenuItem *Start;
+	TMenuItem *difficulty;
+	TMenuItem *Exit;
+	TMenuItem *N6;
+	TMenuItem *N7;
+	TImage *Image1;
+	TMenuItem *Easy;
+	TMenuItem *Medium;
+	TMenuItem *Hard;
+	void __fastcall Timer1Timer(TObject *Sender);
+	void __fastcall FormKeyDown(TObject *Sender, WORD &Key, TShiftState Shift);
+	void __fastcall PaintBox1Paint(TObject *Sender);
+	void __fastcall StartClick(TObject *Sender);
+	void __fastcall ExitClick(TObject *Sender);
+	void __fastcall EasyClick(TObject *Sender);
+	void __fastcall HardClick(TObject *Sender);
+	void __fastcall MediumClick(TObject *Sender);
+private:	// User declarations
+public:		// User declarations
+	__fastcall TForm1(TComponent* Owner);
+};
+//---------------------------------------------------------------------------
+extern PACKAGE TForm1 *Form1;
+//---------------------------------------------------------------------------
+#endif
