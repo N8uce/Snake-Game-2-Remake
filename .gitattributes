@@ -10,4 +10,7 @@ vendor/** linguist-vendored
 *.js linguist-vendored
 *.py linguist-vendored
 *.dfm linguist-vendored
+*.res linguist-vendored
+*.bdsproj linguist-vendored
+*.bdsproj.local linguist-vendored
 Makefile linguist-vendored
