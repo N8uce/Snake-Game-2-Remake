@@ -9,4 +9,5 @@
 vendor/** linguist-vendored
 *.js linguist-vendored
 *.py linguist-vendored
+*.dfm linguist-vendored
 Makefile linguist-vendored
