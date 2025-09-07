@@ -2,4 +2,5 @@
 *.hpp linguist-vendored=false
 *.h linguist-vendored=false
 
-Pascal linguist-vendored
+*.pas linguist-vendored
+*.pp linguist-vendored
